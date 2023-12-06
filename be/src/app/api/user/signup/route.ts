@@ -14,7 +14,9 @@ export async function POST(request: NextRequest) {
   const password = request.nextUrl.searchParams.get('password') as string
 
   const isValid = validator({ password, confirmPassword })
-  if (isValid.status === 'invalid') return isValid.description
+  if (isValid.status === 'invalid') {
+    return new NextResponse(isValid.description, { status: 400 })
+  }
 
   try {
     const response = await userService.signup({
@@ -28,10 +30,13 @@ export async function POST(request: NextRequest) {
     console.log({ response })
 
     if (response) {
-      return Response.json(response)
+      return new NextResponse(JSON.stringify(response), { status: 200 })
     }
   } catch (error) {
     console.log(error)
-    return Response.json(error)
+    return new NextResponse(JSON.stringify(error), { status: 500 })
   }
+
+  // If nothing is returned or resolved, you can return a default response
+  return new NextResponse('Internal Server Error', { status: 500 })
 }
